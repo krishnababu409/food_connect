@@ -1,0 +1,41 @@
+extends layout.pug
+
+block content
+  main
+    // Hero Section
+    .px-4.py-5.my-5.text-center
+      h1.display-4.fw-bold Connecting Communities Through Food
+      .col-lg-6.mx-auto
+        p.lead.mb-4 A platform to reduce food waste by connecting restaurants with surplus food to charities in need. Join us in making a difference, one meal at a time.
+        .d-grid.gap-2.d-sm-flex.justify-content-sm-center
+          a.btn.btn-primary.btn-lg.px-4.gap-3(href='/register' role='button') Get Started
+          a.btn.btn-outline-secondary.btn-lg.px-4(href='#how-it-works' role='button') Learn More
+
+    // How it Works Section
+    .container.px-4.py-5#how-it-works
+      h2.pb-2.border-bottom How It Works
+      .row.g-4.py-5.row-cols-1.row-cols-lg-3
+        .feature.col
+          h3.fs-2 Restaurants Post
+          p Restaurants with surplus food use a simple dashboard to post details about available meals, including quantity and pickup times.
+        .feature.col
+          h3.fs-2 Charities Search
+          p Charities browse real-time listings of available food in their local area and can claim donations with a single click.
+        .feature.col
+          h3.fs-2 Community Benefits
+          p Food is diverted from landfills to those who need it most, reducing waste, saving disposal costs, and fighting food insecurity.
+
+    // Call to Action / Roles Section
+    .container.my-5
+      .row.p-4.pb-0.pe-lg-0.pt-lg-5.align-items-center.rounded-3.border.shadow-lg
+        .col-lg-7.p-3.p-lg-5.pt-lg-3
+          h1.display-4.fw-bold.lh-1 Are you a...
+          .d-flex.gap-4.mt-4
+            div
+              h3 Restaurant?
+              p.lead Easily list your surplus food, reduce waste, and get a tax benefit.
+              a(href="/register").btn.btn-primary.btn-lg Donate Food
+            div
+              h3 Charity?
+              p.lead Find free, high-quality food from local restaurants to support your community.
+              a(href="/register").btn.btn-outline-secondary.btn-lg Find Food
