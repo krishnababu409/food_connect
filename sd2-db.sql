@@ -64,3 +64,22 @@ COMMIT;
 /*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;
 /*!40101 SET CHARACTER_SET_RESULTS=@OLD_CHARACTER_SET_RESULTS */;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
+
+-- Schema and seed data for the dashboard donations view
+USE `sd2-db`;
+
+CREATE TABLE IF NOT EXISTS `donations` (
+  `id` int NOT NULL AUTO_INCREMENT,
+  `donor_name` varchar(255) NOT NULL,
+  `food_item` varchar(255) NOT NULL,
+  `quantity` varchar(100) NOT NULL,
+  `pickup_time` datetime NOT NULL,
+  `status` enum('Available','Claimed','Completed') NOT NULL DEFAULT 'Available',
+  `created_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  PRIMARY KEY (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+
+INSERT INTO `donations` (`donor_name`, `food_item`, `quantity`, `pickup_time`, `status`) VALUES
+('Green Leaf Kitchen', 'Sandwich trays', '15 servings', '2024-07-01 14:00:00', 'Available'),
+('Sunrise Bakery', 'Bagels and pastries', '2 dozen', '2024-07-01 09:00:00', 'Claimed'),
+('Urban Eatery', 'Prepared meals', '25 boxes', '2024-07-01 18:30:00', 'Completed');

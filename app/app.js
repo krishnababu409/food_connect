@@ -20,6 +20,44 @@ app.get("/", function(req, res) {
     res.render("home");
 });
 
+// Dashboard route for donors to land on
+app.get("/dashboard", async function(req, res) {
+    try {
+        const rows = await db.query(
+            `SELECT donor_name, food_item, quantity, pickup_time, status, created_at
+             FROM donations
+             ORDER BY pickup_time ASC`
+        );
+
+        // Format dates for display while keeping data simple
+        const donations = rows.map((row) => ({
+            ...row,
+            pickup_time: new Date(row.pickup_time).toLocaleString(),
+            created_at: new Date(row.created_at).toLocaleString(),
+        }));
+
+        const statusCounts = rows.reduce(
+            (acc, row) => {
+                acc[row.status] = (acc[row.status] || 0) + 1;
+                return acc;
+            },
+            { Available: 0, Claimed: 0, Completed: 0 }
+        );
+
+        const stats = {
+            total: rows.length,
+            available: statusCounts.Available,
+            claimed: statusCounts.Claimed,
+            completed: statusCounts.Completed,
+        };
+
+        res.render("dashboard", { donations, stats });
+    } catch (err) {
+        console.error("Failed to load dashboard", err);
+        res.status(500).send("Unable to load dashboard right now.");
+    }
+});
+
 // Create a route for testing the db
 app.get("/db_test", function(req, res) {
     // Assumes a table called test_table exists in your database
