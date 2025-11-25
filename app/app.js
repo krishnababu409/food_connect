@@ -51,7 +51,7 @@ app.get("/dashboard", async function(req, res) {
             completed: statusCounts.Completed,
         };
 
-        res.render("dashboard", { donations, stats });
+        res.render("dashboard", { donations, stats, activePath: req.path });
     } catch (err) {
         console.error("Failed to load dashboard", err);
         res.status(500).send("Unable to load dashboard right now.");
