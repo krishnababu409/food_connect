@@ -24,7 +24,7 @@ app.get("/", function(req, res) {
 app.get("/dashboard", async function(req, res) {
     try {
         const rows = await db.query(
-            `SELECT donor_name, food_item, quantity, pickup_time, status, created_at
+            `SELECT id, donor_name, food_item, quantity, pickup_time, status, created_at
              FROM donations
              ORDER BY pickup_time ASC`
         );
@@ -55,6 +55,43 @@ app.get("/dashboard", async function(req, res) {
     } catch (err) {
         console.error("Failed to load dashboard", err);
         res.status(500).send("Unable to load dashboard right now.");
+    }
+});
+
+// Detail view for a single donation
+app.get("/donations/:id", async function(req, res) {
+    const { id } = req.params;
+
+    try {
+        const rows = await db.query(
+            `SELECT id, donor_name, food_item, quantity, pickup_time, status, created_at
+             FROM donations
+             WHERE id = ?`,
+            [id]
+        );
+
+        if (!rows.length) {
+            return res.status(404).render("donation-detail", {
+                donation: null,
+                notFound: true,
+                activePath: req.path,
+            });
+        }
+
+        const donation = rows[0];
+        const formattedDonation = {
+            ...donation,
+            pickup_time: new Date(donation.pickup_time).toLocaleString(),
+            created_at: new Date(donation.created_at).toLocaleString(),
+        };
+
+        res.render("donation-detail", {
+            donation: formattedDonation,
+            activePath: req.path,
+        });
+    } catch (err) {
+        console.error(`Failed to load donation ${id}`, err);
+        res.status(500).send("Unable to load donation details right now.");
     }
 });
 

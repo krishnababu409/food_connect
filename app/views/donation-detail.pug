@@ -1,0 +1,43 @@
+extends layout.pug
+
+block navbar
+  include mainbar.pug
+
+block content
+  main
+    .container.py-5
+      .d-flex.align-items-center.justify-content-between.mb-4
+        div
+          h1.display-6.fw-bold Donation Details
+          p.text-muted.mb-0 View the full details for this donation.
+        a.btn.btn-outline-secondary(href='/dashboard') ← Back to dashboard
+
+      if notFound
+        .alert.alert-warning.shadow-sm(role='alert') No donation found for this link.
+      else if donation
+        - const statusClass = donation.status === 'Available' ? 'bg-success' : donation.status === 'Claimed' ? 'bg-warning text-dark' : 'bg-primary'
+        .row.g-4
+          .col-lg-8
+            .card.shadow-sm
+              .card-body
+                h5.card-title.fw-bold.mb-3 #{donation.food_item}
+                p.mb-2
+                  span.text-muted.me-2 Donor:
+                  span.fw-semibold= donation.donor_name
+                p.mb-2
+                  span.text-muted.me-2 Quantity:
+                  span.fw-semibold= donation.quantity
+                p.mb-2
+                  span.text-muted.me-2 Pickup time:
+                  span.fw-semibold= donation.pickup_time
+                p.mb-2
+                  span.text-muted.me-2 Status:
+                  span.badge(class=statusClass)= donation.status
+                p.mb-0.mt-3.text-muted Added #{donation.created_at}
+          .col-lg-4
+            .card.shadow-sm
+              .card-body
+                h6.text-uppercase.text-muted.mb-3 Quick actions
+                .d-grid.gap-2
+                  a.btn.btn-primary(href=`/donations/${donation.id}`) Refresh details
+                  a.btn.btn-outline-primary(href='/dashboard') View all donations

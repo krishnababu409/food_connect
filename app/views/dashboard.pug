@@ -49,7 +49,7 @@ block content
             tbody
               each donation in donations
                 - const statusClass = donation.status === 'Available' ? 'bg-success' : donation.status === 'Claimed' ? 'bg-warning text-dark' : 'bg-primary'
-                tr
+                tr.donation-row(role='button' tabindex='0' data-href=`/donations/${donation.id}`)
                   td.fw-semibold= donation.donor_name
                   td= donation.food_item
                   td= donation.quantity
@@ -62,3 +62,20 @@ block content
 
       .mt-4.d-flex.justify-content-end.align-items-center
         a.btn.btn-primary(href='/register') Add Donation
+
+    if donations && donations.length
+      script.
+        (function() {
+          const rows = document.querySelectorAll('.donation-row');
+          rows.forEach((row) => {
+            const href = row.dataset.href;
+            if (!href) return;
+            row.addEventListener('click', () => window.location = href);
+            row.addEventListener('keypress', (event) => {
+              if (event.key === 'Enter' || event.key === ' ') {
+                event.preventDefault();
+                window.location = href;
+              }
+            });
+          });
+        })();
