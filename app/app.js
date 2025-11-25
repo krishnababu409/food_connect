@@ -17,7 +17,7 @@ const db = require('./services/db');
 // Create a route for root - /
 app.get("/", function(req, res) {
     // render the home.pug file
-    res.render("home");
+    res.render("home", { activePath: req.path });
 });
 
 // Auth pages (UI only for now)
@@ -27,6 +27,16 @@ app.get("/login", function(req, res) {
 
 app.get("/register", function(req, res) {
     res.render("register", { activePath: req.path });
+});
+
+// About page
+app.get("/about", function(req, res) {
+    res.render("about", { activePath: req.path });
+});
+
+// Contact page
+app.get("/contact", function(req, res) {
+    res.render("contact", { activePath: req.path });
 });
 
 // Dashboard route for donors to land on
