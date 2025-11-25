@@ -1,0 +1,36 @@
+extends layout.pug
+
+block content
+  main.container.py-5
+    .row.align-items-center.gy-4
+      .col-lg-6
+        h1.mb-3 About Food Connect
+        p.lead We bridge surplus meals from restaurants to charities so communities get fresh food instead of waste.
+        p.text-muted.mb-4 Founded by volunteers, Food Connect supports a circular food system that keeps kitchens efficient and neighbors nourished.
+        .d-flex.gap-3
+          a.btn.btn-primary(href='/register') Join as a restaurant
+          a.btn.btn-outline-secondary(href='/contact') Partner with us
+      .col-lg-6
+        .p-4.bg-light.rounded-4.shadow-sm
+          h5.text-uppercase.text-muted.mb-3 Our impact
+          ul.list-unstyled.mb-0
+            li.mb-2
+              strong 12,000+
+              |  meals redistributed
+            li.mb-2
+              strong 45
+              |  charity partners
+            li.mb-2
+              strong 30%
+              |  average waste reduction per restaurant
+    hr.my-5
+    .row.g-4
+      .col-md-4
+        h3 Collaborative
+        p We build simple tools so kitchens, drivers, and charities stay coordinated in real time.
+      .col-md-4
+        h3 Reliable
+        p Pickup windows, contact details, and status updates keep donations on schedule.
+      .col-md-4
+        h3 Safe
+        p Best-practice guidance for packing, labeling, and storing food travels with every donation.
