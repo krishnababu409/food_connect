@@ -20,6 +20,15 @@ app.get("/", function(req, res) {
     res.render("home");
 });
 
+// Auth pages (UI only for now)
+app.get("/login", function(req, res) {
+    res.render("login", { activePath: req.path });
+});
+
+app.get("/register", function(req, res) {
+    res.render("register", { activePath: req.path });
+});
+
 // Dashboard route for donors to land on
 app.get("/dashboard", async function(req, res) {
     try {
