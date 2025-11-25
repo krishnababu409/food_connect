@@ -31,11 +31,30 @@ app.get("/register", function(req, res) {
 
 // Dashboard route for donors to land on
 app.get("/dashboard", async function(req, res) {
+    const { status, q } = req.query;
+    const filters = [];
+    const params = [];
+
+    if (status && status !== 'all') {
+        filters.push('status = ?');
+        params.push(status);
+    }
+
+    if (q) {
+        filters.push('(donor_name LIKE ? OR food_item LIKE ?)');
+        const like = `%${q}%`;
+        params.push(like, like);
+    }
+
+    const whereClause = filters.length ? `WHERE ${filters.join(' AND ')}` : '';
+
     try {
         const rows = await db.query(
             `SELECT id, donor_name, food_item, quantity, pickup_time, status, created_at
              FROM donations
-             ORDER BY pickup_time ASC`
+             ${whereClause}
+             ORDER BY pickup_time ASC`,
+            params
         );
 
         // Format dates for display while keeping data simple
@@ -60,7 +79,13 @@ app.get("/dashboard", async function(req, res) {
             completed: statusCounts.Completed,
         };
 
-        res.render("dashboard", { donations, stats, activePath: req.path });
+        res.render("dashboard", {
+            donations,
+            stats,
+            activePath: req.path,
+            statusFilter: status || 'all',
+            searchQuery: q || '',
+        });
     } catch (err) {
         console.error("Failed to load dashboard", err);
         res.status(500).send("Unable to load dashboard right now.");

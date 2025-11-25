@@ -35,6 +35,23 @@ block content
                 .text-muted.text-uppercase.small Completed
                 .fs-3.fw-bold.text-primary= stats.completed
 
+      // Filters and search
+      .bg-white.border.rounded-4.shadow-sm.mt-4
+        form#filtersForm(class='p-3 p-lg-4 d-flex flex-column flex-lg-row align-items-lg-end gap-3' method='get' action='/dashboard')
+          .flex-grow-1
+            label.form-label(for='q') Search
+            input#q.form-control(type='search' name='q' placeholder='Search donor or food item' value=searchQuery)
+          .flex-grow-0
+            label.form-label(for='status') Status
+            select#status.form-select(name='status')
+              option(value='all' selected=(statusFilter === 'all')) All
+              option(value='Available' selected=(statusFilter === 'Available')) Available
+              option(value='Claimed' selected=(statusFilter === 'Claimed')) Claimed
+              option(value='Completed' selected=(statusFilter === 'Completed')) Completed
+          .d-flex.gap-2
+            button.btn.btn-primary(type='submit') Apply
+            a.btn.btn-outline-secondary(href='/dashboard' role='button') Reset
+
       if donations && donations.length
         .table-responsive.mt-4
           table.table.table-striped.table-hover.align-middle.shadow-sm
@@ -58,7 +75,7 @@ block content
                     span.badge(class=statusClass)= donation.status
                   td.text-muted= donation.created_at
       else
-        .alert.alert-info.mt-4.shadow-sm No donations available yet. Check back soon.
+        .alert.alert-info.mt-4.shadow-sm No donations match your filters. Try adjusting search or status.
 
       .mt-4.d-flex.justify-content-end.align-items-center
         a.btn.btn-primary(href='/register') Add Donation
