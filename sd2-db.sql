@@ -83,3 +83,11 @@ INSERT INTO `donations` (`donor_name`, `food_item`, `quantity`, `pickup_time`, `
 ('Green Leaf Kitchen', 'Sandwich trays', '15 servings', '2024-07-01 14:00:00', 'Available'),
 ('Sunrise Bakery', 'Bagels and pastries', '2 dozen', '2024-07-01 09:00:00', 'Claimed'),
 ('Urban Eatery', 'Prepared meals', '25 boxes', '2024-07-01 18:30:00', 'Completed');
+
+CREATE TABLE Users (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    email VARCHAR(255) NOT NULL UNIQUE,
+    password VARCHAR(255) NOT NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+

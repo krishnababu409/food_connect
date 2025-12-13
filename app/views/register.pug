@@ -12,32 +12,16 @@ block content
             .card-body.p-4.p-lg-5
               h1.fw-bold.mb-3 Create account
               p.text-muted.mb-4 Join Food Connect to share or claim donations.
-              form(method='post' action='/register' novalidate)
+              form(method='post' action='/set-password' novalidate)
                 .row.g-3
                   .col-md-6
-                    label.form-label(for='name') Full name
-                    input#name.form-control(type='text' name='name' placeholder='Full name' required)
-                  .col-md-6
-                    label.form-label(for='org') Organization
-                    input#org.form-control(type='text' name='organization' placeholder='organisation')
-                  .col-md-6
                     label.form-label(for='email') Email
-                    input#email.form-control(type='email' name='email' placeholder='you@example.com' required)
-                  .col-md-6
-                    label.form-label(for='phone') Phone
-                    input#phone.form-control(type='tel' name='phone' placeholder='phone number')
+                    input#email.form-control(type='email' name='email' required)
+
                   .col-md-6
                     label.form-label(for='password') Password
-                    input#password.form-control(type='password' name='password' placeholder='••••••••' required)
-                  .col-md-6
-                    label.form-label(for='confirm') Confirm password
-                    input#confirm.form-control(type='password' name='confirm_password' placeholder='••••••••' required)
-                  .col-12
-                    label.form-label(for='role') I am a
-                    select#role.form-select(name='role' required)
-                      option(value='' selected disabled) Select one
-                      option(value='donor') Donor / Restaurant
-                      option(value='charity') Charity / Organization
+                    input#password.form-control(type='password' name='password' required)
+
                 .d-grid.mt-4
                   button.btn.btn-primary.btn-lg(type='submit') Create account
                 p.mb-0.mt-3.text-muted Already have an account?
