@@ -1,24 +1,107 @@
 // Import express.js
 const express = require("express");
-
+const { User } = require("./models/user");
+const bodyParser = require('body-parser');
+const cookieParser = require("cookie-parser");
+const session = require('express-session');
+const db = require('./services/db');
 // Create express app
 var app = express();
 
-// Set the view engine to pug
+app.use(bodyParser.urlencoded({ extended: true }));
+app.use(bodyParser.json());
+app.use(express.static("app/static"));
+
+// pug engine
 app.set('view engine', 'pug');
 app.set('views', './app/views');
 
-// Add static files location
-app.use(express.static("static"));
+//sessions and cookies
+app.use(cookieParser());
 
-// Get the functions in the db.js file to use
-const db = require('./services/db');
-
-// Create a route for root - /
-app.get("/", function(req, res) {
-    // render the home.pug file
-    res.render("home", { activePath: req.path });
+const oneDay = 1000 * 60 * 60 * 24;
+const sessionMiddleware = session({
+    secret: "secretkeysdfjsflyoifasd",
+    saveUninitialized: true,
+    cookie: { maxAge: oneDay },
+    resave: false
 });
+app.use(sessionMiddleware);
+
+app.post('/set-password', async function (req, res) {
+    params = req.body;
+    var user = new User(params.email);
+    try {
+        uId = await user.getIdFromEmail();
+        if (uId) {
+            // If a valid, existing user is found, set the password and redirect to the users single-student page
+            await user.setUserPassword(params.password);
+            console.log(req.session.id);
+            res.send('Password set successfully');
+        }
+        else {
+            // If no existing user is found, add a new one
+            newId = await user.addUser(params.email);
+            res.send('Perhaps a page where a new user sets a programme would be good here');
+        }
+    } catch (err) {
+        console.error(`Error while adding password `, err.message);
+    }
+});
+
+// Check submitted email and password pair
+app.post('/authenticate', async function (req, res) {
+    try {
+        const { email, password } = req.body;
+        if (!email || !password) {
+            return res.status(400).send('Email and password are required.');
+        }
+
+        var user = new User(email);
+        const uId = await user.getIdFromEmail();
+        if (!uId) {
+            return res.status(401).send('Invalid email');
+        }
+
+        const match = await user.authenticate(password);
+        if (!match) {
+            return res.status(401).send('Invalid password');
+        }
+
+        req.session.uid = uId;
+        req.session.loggedIn = true;
+        console.log(req.session.id);
+        res.redirect('/');
+    } catch (err) {
+        console.error(`Error while authenticating user:`, err.message);
+        res.status(500).send('Internal Server Error');
+    }
+});
+
+app.get("/", function (req, res) {
+    try {
+        if (req.session.uid) {
+            res.render('dashboard')
+        } else {
+            res.render('home');
+        }
+        res.end();
+    } catch (err) {
+        console.error("Error accessing root route:", err);
+        res.status(500).send('Internal Server Error');
+    }
+});
+
+app.get('/logout', function (req, res) {
+    try {
+        req.session.destroy();
+        res.redirect('/');
+    } catch (err) {
+        console.error("Error logging out:", err);
+        res.status(500).send('Internal Server Error');
+    }
+});
+
 
 // Auth pages (UI only for now)
 app.get("/login", function(req, res) {
