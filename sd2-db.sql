@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: db
--- Generation Time: Dec 16, 2025 at 10:13 AM
+-- Generation Time: Dec 16, 2025 at 07:07 PM
 -- Server version: 9.5.0
 -- PHP Version: 8.3.26
 
@@ -58,9 +58,9 @@ CREATE TABLE `donations` (
 --
 
 INSERT INTO `donations` (`id`, `donor_id`, `donor_name`, `food_item`, `quantity`, `pickup_time`, `expiry_time`, `status`, `created_at`) VALUES
-(1, NULL, 'Green Leaf Kitchen', 'Sandwich trays', '15 servings', '2025-01-01 14:00:00', NULL, 'Available', '2025-12-16 10:12:36'),
 (2, NULL, 'Sunrise Bakery', 'Bagels and pastries', '2 dozen', '2025-01-01 09:00:00', NULL, 'Claimed', '2025-12-16 10:12:36'),
-(3, NULL, 'Urban Eatery', 'Prepared meals', '25 boxes', '2025-01-01 18:30:00', NULL, 'Completed', '2025-12-16 10:12:36');
+(3, NULL, 'Urban Eatery', 'Prepared meals', '25 boxes', '2025-01-01 18:30:00', NULL, 'Completed', '2025-12-16 10:12:36'),
+(4, 1, 'You', 'chicken biriyani', '10', '2025-12-17 20:06:00', NULL, 'Claimed', '2025-12-16 14:36:35');
 
 -- --------------------------------------------------------
 
@@ -71,10 +71,17 @@ INSERT INTO `donations` (`id`, `donor_id`, `donor_name`, `food_item`, `quantity`
 CREATE TABLE `food_requests` (
   `id` int NOT NULL,
   `donation_id` int NOT NULL,
-  `receiver_name` varchar(255) NOT NULL,
+  `receiver_id` int NOT NULL,
   `status` enum('Pending','Approved','Rejected') DEFAULT 'Pending',
   `requested_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+
+--
+-- Dumping data for table `food_requests`
+--
+
+INSERT INTO `food_requests` (`id`, `donation_id`, `receiver_id`, `status`, `requested_at`) VALUES
+(1, 4, 2, 'Approved', '2025-12-16 18:55:06');
 
 -- --------------------------------------------------------
 
@@ -120,7 +127,8 @@ ALTER TABLE `donations`
 --
 ALTER TABLE `food_requests`
   ADD PRIMARY KEY (`id`),
-  ADD KEY `donation_id` (`donation_id`);
+  ADD KEY `donation_id` (`donation_id`),
+  ADD KEY `receiver_id` (`receiver_id`);
 
 --
 -- Indexes for table `users`
@@ -143,13 +151,13 @@ ALTER TABLE `contact_messages`
 -- AUTO_INCREMENT for table `donations`
 --
 ALTER TABLE `donations`
-  MODIFY `id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=4;
+  MODIFY `id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=5;
 
 --
 -- AUTO_INCREMENT for table `food_requests`
 --
 ALTER TABLE `food_requests`
-  MODIFY `id` int NOT NULL AUTO_INCREMENT;
+  MODIFY `id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=2;
 
 --
 -- AUTO_INCREMENT for table `users`
@@ -171,7 +179,8 @@ ALTER TABLE `donations`
 -- Constraints for table `food_requests`
 --
 ALTER TABLE `food_requests`
-  ADD CONSTRAINT `food_requests_ibfk_1` FOREIGN KEY (`donation_id`) REFERENCES `donations` (`id`) ON DELETE CASCADE;
+  ADD CONSTRAINT `food_requests_ibfk_1` FOREIGN KEY (`donation_id`) REFERENCES `donations` (`id`),
+  ADD CONSTRAINT `food_requests_ibfk_2` FOREIGN KEY (`receiver_id`) REFERENCES `users` (`id`);
 COMMIT;
 
 /*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;
