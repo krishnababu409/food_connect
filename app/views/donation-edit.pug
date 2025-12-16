@@ -1,0 +1,45 @@
+extends layout.pug
+
+block navbar
+  include donor-navbar.pug
+
+block content
+  main.container.py-5
+    .row.justify-content-center
+      .col-lg-6
+        .card.shadow-sm
+          .card-body.p-4
+            h1.fw-bold.mb-3 Update Donation
+            p.text-muted.mb-4 Modify donation details.
+
+            form(method='post' action=`/donations/${donation.id}/edit`)
+              .mb-3
+                label.form-label(for='food_item') Food Item
+                input#food_item.form-control(
+                  type='text'
+                  name='food_item'
+                  value=donation.food_item
+                  required
+                )
+
+              .mb-3
+                label.form-label(for='quantity') Quantity
+                input#quantity.form-control(
+                  type='text'
+                  name='quantity'
+                  value=donation.quantity
+                  required
+                )
+
+              .mb-3
+                label.form-label(for='pickup_time') Pickup Time
+                input#pickup_time.form-control(
+                  type='datetime-local'
+                  name='pickup_time'
+                  value=donation.pickup_time.toISOString().slice(0,16)
+                  required
+                )
+
+              .d-flex.justify-content-end.gap-2
+                a.btn.btn-outline-secondary(href=`/donations/${donation.id}`) Cancel
+                button.btn.btn-primary(type='submit') Save Changes

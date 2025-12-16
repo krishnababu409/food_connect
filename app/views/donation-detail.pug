@@ -34,10 +34,21 @@ block content
                   span.text-muted.me-2 Status:
                   span.badge(class=statusClass)= donation.status
                 p.mb-0.mt-3.text-muted Added #{donation.created_at}
-          .col-lg-4
-            .card.shadow-sm
-              .card-body
-                h6.text-uppercase.text-muted.mb-3 Quick actions
-                .d-grid.gap-2
-                  a.btn.btn-primary(href=`/donations/${donation.id}`) Refresh details
-                  a.btn.btn-outline-primary(href='/dashboard') View all donations
+            .col-lg-4
+              .card.shadow-sm
+                .card-body
+                  h6.text-uppercase.text-muted.mb-3 Quick actions
+                  .d-grid.gap-2
+                    a.btn.btn-warning(
+                      href=`/donations/${donation.id}/edit`
+                    ) Update Donation
+
+                    form(
+                      method='post'
+                      action=`/donations/${donation.id}/delete`
+                      onsubmit="return confirm('Are you sure you want to delete this donation?')"
+                    )
+                      button.btn.btn-danger(type='submit') Delete Donation
+
+                    a.btn.btn-outline-secondary(href='/dashboard')
+                      | Back to Dashboard

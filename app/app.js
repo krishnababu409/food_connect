@@ -383,6 +383,90 @@ app.get("/db_test", function(req, res) {
     });
 });
 
+// Show edit donation form
+app.get('/donations/:id/edit', async function (req, res) {
+
+    if (!req.session.loggedIn || req.session.role !== 'donor') {
+        return res.redirect('/login');
+    }
+
+    const { id } = req.params;
+    const donorId = req.session.uid;
+
+    try {
+        const rows = await db.query(
+            `SELECT id, food_item, quantity, pickup_time
+             FROM donations
+             WHERE id = ? AND donor_id = ?`,
+            [id, donorId]
+        );
+
+        if (!rows.length) {
+            return res.redirect('/dashboard');
+        }
+
+        res.render('donation-edit', {
+            donation: rows[0],
+            activePath: req.path
+        });
+
+    } catch (err) {
+        console.error('Edit donation error:', err);
+        res.status(500).send('Unable to load edit page');
+    }
+});
+// Update donation
+app.post('/donations/:id/edit', async function (req, res) {
+
+    if (!req.session.loggedIn || req.session.role !== 'donor') {
+        return res.redirect('/login');
+    }
+
+    const { id } = req.params;
+    const donorId = req.session.uid;
+    const { food_item, quantity, pickup_time } = req.body;
+
+    try {
+        await db.query(
+            `UPDATE donations
+             SET food_item = ?, quantity = ?, pickup_time = ?
+             WHERE id = ? AND donor_id = ?`,
+            [food_item, quantity, pickup_time, id, donorId]
+        );
+
+        res.redirect(`/donations/${id}`);
+
+    } catch (err) {
+        console.error('Update donation error:', err);
+        res.status(500).send('Unable to update donation');
+    }
+});
+
+// Delete donation
+app.post('/donations/:id/delete', async function (req, res) {
+
+    if (!req.session.loggedIn || req.session.role !== 'donor') {
+        return res.redirect('/login');
+    }
+
+    const { id } = req.params;
+    const donorId = req.session.uid;
+
+    try {
+        await db.query(
+            `DELETE FROM donations
+             WHERE id = ? AND donor_id = ?`,
+            [id, donorId]
+        );
+
+        res.redirect('/dashboard');
+
+    } catch (err) {
+        console.error('Delete donation error:', err);
+        res.status(500).send('Unable to delete donation');
+    }
+});
+
 // Create a route for /goodbye
 // Responds to a 'GET' request
 app.get("/goodbye", function(req, res) {
