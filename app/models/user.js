@@ -40,13 +40,12 @@ class User {
     const result = await db.query(sql, [this.email]);
 
     if (result.length > 0) {
-        this.id = result[0].id;
-        this.role = result[0].role;
-        return result[0];
+      this.id = result[0].id;
+      this.role = result[0].role;
+      return result[0];
     }
     return null;
-}
-
+  }
 
   // Add a new record to the users table
   async addUser(password, role = "donor") {
@@ -69,6 +68,26 @@ class User {
     } else {
       return false;
     }
+  }
+  // Get user profile by ID
+  async getProfileById(id) {
+    const sql = `
+        SELECT id, email, role, created_at
+        FROM users
+        WHERE id = ?
+    `;
+    const rows = await db.query(sql, [id]);
+    return rows[0] || null;
+  }
+
+  // Update user email
+  async updateEmail(id, email) {
+    const sql = `
+        UPDATE users
+        SET email = ?
+        WHERE id = ?
+    `;
+    return db.query(sql, [email, id]);
   }
 }
 

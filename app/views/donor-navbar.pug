@@ -18,12 +18,13 @@ nav.navbar.navbar-expand-lg.navbar-dark.bg-dark
           ) Dashboard
 
         li.nav-item
-          a.nav-link(
-            href='/register'
-            class=(activePath === '/register' ? 'active' : '')
-          ) Add Donation
+          a.nav-link(href='/profile') Profile
 
         li.nav-item
           a.nav-link(
-            href='/logout'
-          ) Logout
+            href='/donations/create'
+            class=(activePath === '/donations/create' ? 'active' : '')
+          ) + Create Donation
+
+        li.nav-item
+          a.nav-link(href='/logout') Logout
