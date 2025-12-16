@@ -5,6 +5,7 @@ const bodyParser = require('body-parser');
 const cookieParser = require("cookie-parser");
 const session = require('express-session');
 const db = require('./services/db');
+const { Donation } = require("./models/donation");
 // Create express app
 var app = express();
 
@@ -184,101 +185,35 @@ app.post('/contact', async function (req, res) {
 // Donor Dashboard (Only logged-in donor's data)
 app.get('/dashboard', async function (req, res) {
 
-    // Auth check
     if (!req.session.loggedIn || req.session.role !== 'donor') {
         return res.redirect('/login');
     }
 
-    const donorId = req.session.uid;
+    const donationModel = new Donation(req.session.uid);
     const { status, q } = req.query;
 
-    const filters = ['donor_id = ?'];
-    const params = [donorId];
+    const rows = await donationModel.getByDonor({ status, q });
 
-    if (status && status !== 'all') {
-        filters.push('status = ?');
-        params.push(status);
-    }
+    const donations = rows.map(d => ({
+        ...d,
+        pickup_time: new Date(d.pickup_time).toLocaleString(),
+        created_at: new Date(d.created_at).toLocaleString()
+    }));
 
-    if (q) {
-        filters.push('(food_item LIKE ?)');
-        const like = `%${q}%`;
-        params.push(like);
-    }
+    const stats = {
+        total: rows.length,
+        available: rows.filter(d => d.status === 'Available').length,
+        claimed: rows.filter(d => d.status === 'Claimed').length,
+        completed: rows.filter(d => d.status === 'Completed').length
+    };
 
-    const whereClause = `WHERE ${filters.join(' AND ')}`;
-
-    try {
-        const rows = await db.query(
-            `
-            SELECT id, donor_name, food_item, quantity, pickup_time, status, created_at
-            FROM donations
-            ${whereClause}
-            ORDER BY pickup_time ASC
-            `,
-            params
-        );
-
-        // Format dates
-        const donations = rows.map(row => ({
-            ...row,
-            pickup_time: new Date(row.pickup_time).toLocaleString(),
-            created_at: new Date(row.created_at).toLocaleString()
-        }));
-
-        // Stats (only this donor)
-        const stats = {
-            total: rows.length,
-            available: rows.filter(d => d.status === 'Available').length,
-            claimed: rows.filter(d => d.status === 'Claimed').length,
-            completed: rows.filter(d => d.status === 'Completed').length
-        };
-
-        res.render('dashboard', {
-            donations,
-            stats,
-            activePath: req.path,
-            statusFilter: status || 'all',
-            searchQuery: q || ''
-        });
-
-    } catch (err) {
-        console.error('Donor dashboard error:', err);
-        res.status(500).send('Unable to load dashboard');
-    }
-});
-
-// Receiver Dashboard - View all available donations
-app.get('/receiver/dashboard', async function (req, res) {
-
-    // Receiver auth check
-    if (!req.session.loggedIn || req.session.role !== 'receiver') {
-        return res.redirect('/login');
-    }
-
-    try {
-        const rows = await db.query(`
-            SELECT id, donor_name, food_item, quantity, pickup_time, created_at
-            FROM donations
-            WHERE status = 'Available'
-            ORDER BY pickup_time ASC
-        `);
-
-        const donations = rows.map(row => ({
-            ...row,
-            pickup_time: new Date(row.pickup_time).toLocaleString(),
-            created_at: new Date(row.created_at).toLocaleString()
-        }));
-
-        res.render('receiver-dashboard', {
-            donations,
-            activePath: req.path
-        });
-
-    } catch (err) {
-        console.error('Receiver dashboard error:', err);
-        res.status(500).send('Unable to load available food');
-    }
+    res.render('dashboard', {
+        donations,
+        stats,
+        statusFilter: status || 'all',
+        searchQuery: q || '',
+        activePath: req.path
+    });
 });
 
 
@@ -301,38 +236,19 @@ app.post('/donations/create', async function (req, res) {
         return res.redirect('/login');
     }
 
+    const donationModel = new Donation(req.session.uid);
     const { food_item, quantity, pickup_time } = req.body;
-    const donorId = req.session.uid;
 
-    if (!food_item || !quantity || !pickup_time) {
-        return res.render('donation-create', {
-            errorMessage: 'All fields are required'
-        });
-    }
+    await donationModel.create({
+        donor_name: 'You',
+        food_item,
+        quantity,
+        pickup_time
+    });
 
-    try {
-        await db.query(
-            `INSERT INTO donations 
-             (donor_id, donor_name, food_item, quantity, pickup_time)
-             VALUES (?, ?, ?, ?, ?)`,
-            [
-                donorId,
-                'You', // or fetch donor name later
-                food_item,
-                quantity,
-                pickup_time
-            ]
-        );
-
-        res.redirect('/dashboard');
-
-    } catch (err) {
-        console.error('Create donation error:', err);
-        res.render('donation-create', {
-            errorMessage: 'Failed to create donation'
-        });
-    }
+    res.redirect('/dashboard');
 });
+
 
 
 
@@ -415,6 +331,7 @@ app.get('/donations/:id/edit', async function (req, res) {
         res.status(500).send('Unable to load edit page');
     }
 });
+
 // Update donation
 app.post('/donations/:id/edit', async function (req, res) {
 
@@ -422,25 +339,12 @@ app.post('/donations/:id/edit', async function (req, res) {
         return res.redirect('/login');
     }
 
-    const { id } = req.params;
-    const donorId = req.session.uid;
-    const { food_item, quantity, pickup_time } = req.body;
+    const donationModel = new Donation(req.session.uid);
+    await donationModel.update(req.params.id, req.body);
 
-    try {
-        await db.query(
-            `UPDATE donations
-             SET food_item = ?, quantity = ?, pickup_time = ?
-             WHERE id = ? AND donor_id = ?`,
-            [food_item, quantity, pickup_time, id, donorId]
-        );
-
-        res.redirect(`/donations/${id}`);
-
-    } catch (err) {
-        console.error('Update donation error:', err);
-        res.status(500).send('Unable to update donation');
-    }
+    res.redirect(`/donations/${req.params.id}`);
 });
+
 
 // Delete donation
 app.post('/donations/:id/delete', async function (req, res) {
@@ -449,22 +353,10 @@ app.post('/donations/:id/delete', async function (req, res) {
         return res.redirect('/login');
     }
 
-    const { id } = req.params;
-    const donorId = req.session.uid;
+    const donationModel = new Donation(req.session.uid);
+    await donationModel.delete(req.params.id);
 
-    try {
-        await db.query(
-            `DELETE FROM donations
-             WHERE id = ? AND donor_id = ?`,
-            [id, donorId]
-        );
-
-        res.redirect('/dashboard');
-
-    } catch (err) {
-        console.error('Delete donation error:', err);
-        res.status(500).send('Unable to delete donation');
-    }
+    res.redirect('/dashboard');
 });
 
 // Create a route for /goodbye
@@ -483,6 +375,28 @@ app.get("/hello/:name", function(req, res) {
     //  Retrieve the 'name' parameter and use it in a dynamically generated page
     res.send("Hello " + req.params.name);
 });
+
+
+app.get('/receiver/dashboard', async function (req, res) {
+
+    if (!req.session.loggedIn || req.session.role !== 'receiver') {
+        return res.redirect('/login');
+    }
+
+    const rows = await Donation.getAvailable();
+
+    const donations = rows.map(d => ({
+        ...d,
+        pickup_time: new Date(d.pickup_time).toLocaleString(),
+        created_at: new Date(d.created_at).toLocaleString()
+    }));
+
+    res.render('receiver-dashboard', {
+        donations,
+        activePath: req.path
+    });
+});
+
 
 // Start server on port 3000
 app.listen(3000,function(){
