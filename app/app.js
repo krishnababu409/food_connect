@@ -248,6 +248,40 @@ app.get('/dashboard', async function (req, res) {
     }
 });
 
+// Receiver Dashboard - View all available donations
+app.get('/receiver/dashboard', async function (req, res) {
+
+    // Receiver auth check
+    if (!req.session.loggedIn || req.session.role !== 'receiver') {
+        return res.redirect('/login');
+    }
+
+    try {
+        const rows = await db.query(`
+            SELECT id, donor_name, food_item, quantity, pickup_time, created_at
+            FROM donations
+            WHERE status = 'Available'
+            ORDER BY pickup_time ASC
+        `);
+
+        const donations = rows.map(row => ({
+            ...row,
+            pickup_time: new Date(row.pickup_time).toLocaleString(),
+            created_at: new Date(row.created_at).toLocaleString()
+        }));
+
+        res.render('receiver-dashboard', {
+            donations,
+            activePath: req.path
+        });
+
+    } catch (err) {
+        console.error('Receiver dashboard error:', err);
+        res.status(500).send('Unable to load available food');
+    }
+});
+
+
 
 // Detail view for a single donation
 app.get("/donations/:id", async function(req, res) {

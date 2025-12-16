@@ -1,0 +1,33 @@
+extends layout.pug
+
+block navbar
+  include receiver-navbar.pug
+
+block content
+  main.container.py-5
+    .d-flex.justify-content-between.align-items-center.mb-4
+      div
+        h1.fw-bold Receiver Dashboard
+        p.text-muted Browse all available food donations.
+
+    if donations && donations.length
+      .table-responsive
+        table.table.table-striped.table-hover.align-middle.shadow-sm
+          thead.table-dark
+            tr
+              th Donor
+              th Food Item
+              th Quantity
+              th Pickup Time
+              th Added
+          tbody
+            each donation in donations
+              tr
+                td.fw-semibold= donation.donor_name
+                td= donation.food_item
+                td= donation.quantity
+                td= donation.pickup_time
+                td.text-muted= donation.created_at
+    else
+      .alert.alert-info.mt-4
+        | No deals available right now. Please check again later.

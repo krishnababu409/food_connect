@@ -1,0 +1,23 @@
+nav.navbar.navbar-expand-lg.navbar-dark.bg-dark
+  .container-fluid
+    a.navbar-brand(href='/') Food Connect
+
+    button.navbar-toggler(
+      type='button'
+      data-bs-toggle='collapse'
+      data-bs-target='#receiverNav'
+    )
+      span.navbar-toggler-icon
+
+    #receiverNav.collapse.navbar-collapse
+      ul.navbar-nav.ms-auto.mb-2.mb-lg-0
+        li.nav-item
+          a.nav-link(
+            href='/receiver/dashboard'
+            class=(activePath === '/receiver/dashboard' ? 'active' : '')
+          ) Browse Food
+
+        li.nav-item
+          a.nav-link(
+            href='/logout'
+          ) Logout
