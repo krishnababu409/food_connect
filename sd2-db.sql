@@ -1,11 +1,11 @@
 -- phpMyAdmin SQL Dump
--- version 5.1.1
+-- version 5.2.3
 -- https://www.phpmyadmin.net/
 --
 -- Host: db
--- Generation Time: Oct 30, 2022 at 09:54 AM
--- Server version: 8.0.24
--- PHP Version: 7.4.20
+-- Generation Time: Dec 16, 2025 at 10:13 AM
+-- Server version: 9.5.0
+-- PHP Version: 8.3.26
 
 SET SQL_MODE = "NO_AUTO_VALUE_ON_ZERO";
 START TRANSACTION;
@@ -24,70 +24,156 @@ SET time_zone = "+00:00";
 -- --------------------------------------------------------
 
 --
--- Table structure for table `test_table`
+-- Table structure for table `contact_messages`
 --
 
-CREATE TABLE `test_table` (
+CREATE TABLE `contact_messages` (
   `id` int NOT NULL,
-  `name` varchar(512) NOT NULL
+  `name` varchar(255) NOT NULL,
+  `email` varchar(255) NOT NULL,
+  `message` text NOT NULL,
+  `created_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `donations`
+--
+
+CREATE TABLE `donations` (
+  `id` int NOT NULL,
+  `donor_id` int DEFAULT NULL,
+  `donor_name` varchar(255) NOT NULL,
+  `food_item` varchar(255) NOT NULL,
+  `quantity` varchar(100) NOT NULL,
+  `pickup_time` datetime NOT NULL,
+  `expiry_time` datetime DEFAULT NULL,
+  `status` enum('Available','Claimed','Completed') DEFAULT 'Available',
+  `created_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 
 --
--- Dumping data for table `test_table`
+-- Dumping data for table `donations`
 --
 
-INSERT INTO `test_table` (`id`, `name`) VALUES
-(1, 'Lisa'),
-(2, 'Kimia');
+INSERT INTO `donations` (`id`, `donor_id`, `donor_name`, `food_item`, `quantity`, `pickup_time`, `expiry_time`, `status`, `created_at`) VALUES
+(1, NULL, 'Green Leaf Kitchen', 'Sandwich trays', '15 servings', '2025-01-01 14:00:00', NULL, 'Available', '2025-12-16 10:12:36'),
+(2, NULL, 'Sunrise Bakery', 'Bagels and pastries', '2 dozen', '2025-01-01 09:00:00', NULL, 'Claimed', '2025-12-16 10:12:36'),
+(3, NULL, 'Urban Eatery', 'Prepared meals', '25 boxes', '2025-01-01 18:30:00', NULL, 'Completed', '2025-12-16 10:12:36');
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `food_requests`
+--
+
+CREATE TABLE `food_requests` (
+  `id` int NOT NULL,
+  `donation_id` int NOT NULL,
+  `receiver_name` varchar(255) NOT NULL,
+  `status` enum('Pending','Approved','Rejected') DEFAULT 'Pending',
+  `requested_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `users`
+--
+
+CREATE TABLE `users` (
+  `id` int NOT NULL,
+  `email` varchar(255) NOT NULL,
+  `password` varchar(255) NOT NULL,
+  `role` enum('donor','receiver') DEFAULT 'donor',
+  `created_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+
+--
+-- Dumping data for table `users`
+--
+
+INSERT INTO `users` (`id`, `email`, `password`, `role`, `created_at`) VALUES
+(1, 'donar@gmail.com', '$2a$10$yeQTVs3MtDe2FbzV2sU1keZQaK.Hckr2JDlxt8uWi4WgxNe8DSxMy', 'donor', '2025-12-16 10:00:40'),
+(2, 'receiver@gmail.com', '$2a$10$e1dTi2yiTB4BD2JgMKfseuLG3tIhgwNBXjmGzvB5ODFgRae2gYLc.', 'receiver', '2025-12-16 10:04:27');
 
 --
 -- Indexes for dumped tables
 --
 
 --
--- Indexes for table `test_table`
+-- Indexes for table `contact_messages`
 --
-ALTER TABLE `test_table`
+ALTER TABLE `contact_messages`
   ADD PRIMARY KEY (`id`);
+
+--
+-- Indexes for table `donations`
+--
+ALTER TABLE `donations`
+  ADD PRIMARY KEY (`id`),
+  ADD KEY `donor_id` (`donor_id`);
+
+--
+-- Indexes for table `food_requests`
+--
+ALTER TABLE `food_requests`
+  ADD PRIMARY KEY (`id`),
+  ADD KEY `donation_id` (`donation_id`);
+
+--
+-- Indexes for table `users`
+--
+ALTER TABLE `users`
+  ADD PRIMARY KEY (`id`),
+  ADD UNIQUE KEY `email` (`email`);
 
 --
 -- AUTO_INCREMENT for dumped tables
 --
 
 --
--- AUTO_INCREMENT for table `test_table`
+-- AUTO_INCREMENT for table `contact_messages`
 --
-ALTER TABLE `test_table`
+ALTER TABLE `contact_messages`
+  MODIFY `id` int NOT NULL AUTO_INCREMENT;
+
+--
+-- AUTO_INCREMENT for table `donations`
+--
+ALTER TABLE `donations`
+  MODIFY `id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=4;
+
+--
+-- AUTO_INCREMENT for table `food_requests`
+--
+ALTER TABLE `food_requests`
+  MODIFY `id` int NOT NULL AUTO_INCREMENT;
+
+--
+-- AUTO_INCREMENT for table `users`
+--
+ALTER TABLE `users`
   MODIFY `id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=3;
+
+--
+-- Constraints for dumped tables
+--
+
+--
+-- Constraints for table `donations`
+--
+ALTER TABLE `donations`
+  ADD CONSTRAINT `donations_ibfk_1` FOREIGN KEY (`donor_id`) REFERENCES `users` (`id`) ON DELETE SET NULL;
+
+--
+-- Constraints for table `food_requests`
+--
+ALTER TABLE `food_requests`
+  ADD CONSTRAINT `food_requests_ibfk_1` FOREIGN KEY (`donation_id`) REFERENCES `donations` (`id`) ON DELETE CASCADE;
 COMMIT;
 
 /*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;
 /*!40101 SET CHARACTER_SET_RESULTS=@OLD_CHARACTER_SET_RESULTS */;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
-
--- Schema and seed data for the dashboard donations view
-USE `sd2-db`;
-
-CREATE TABLE IF NOT EXISTS `donations` (
-  `id` int NOT NULL AUTO_INCREMENT,
-  `donor_name` varchar(255) NOT NULL,
-  `food_item` varchar(255) NOT NULL,
-  `quantity` varchar(100) NOT NULL,
-  `pickup_time` datetime NOT NULL,
-  `status` enum('Available','Claimed','Completed') NOT NULL DEFAULT 'Available',
-  `created_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
-  PRIMARY KEY (`id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
-
-INSERT INTO `donations` (`donor_name`, `food_item`, `quantity`, `pickup_time`, `status`) VALUES
-('Green Leaf Kitchen', 'Sandwich trays', '15 servings', '2024-07-01 14:00:00', 'Available'),
-('Sunrise Bakery', 'Bagels and pastries', '2 dozen', '2024-07-01 09:00:00', 'Claimed'),
-('Urban Eatery', 'Prepared meals', '25 boxes', '2024-07-01 18:30:00', 'Completed');
-
-CREATE TABLE Users (
-    id INT AUTO_INCREMENT PRIMARY KEY,
-    email VARCHAR(255) NOT NULL UNIQUE,
-    password VARCHAR(255) NOT NULL,
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-);
-
