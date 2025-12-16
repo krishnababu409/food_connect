@@ -181,11 +181,19 @@ app.post('/contact', async function (req, res) {
 });
 
 
-// Dashboard route for donors to land on
-app.get("/dashboard", async function(req, res) {
+// Donor Dashboard (Only logged-in donor's data)
+app.get('/dashboard', async function (req, res) {
+
+    // Auth check
+    if (!req.session.loggedIn || req.session.role !== 'donor') {
+        return res.redirect('/login');
+    }
+
+    const donorId = req.session.uid;
     const { status, q } = req.query;
-    const filters = [];
-    const params = [];
+
+    const filters = ['donor_id = ?'];
+    const params = [donorId];
 
     if (status && status !== 'all') {
         filters.push('status = ?');
@@ -193,56 +201,53 @@ app.get("/dashboard", async function(req, res) {
     }
 
     if (q) {
-        filters.push('(donor_name LIKE ? OR food_item LIKE ?)');
+        filters.push('(food_item LIKE ?)');
         const like = `%${q}%`;
-        params.push(like, like);
+        params.push(like);
     }
 
-    const whereClause = filters.length ? `WHERE ${filters.join(' AND ')}` : '';
+    const whereClause = `WHERE ${filters.join(' AND ')}`;
 
     try {
         const rows = await db.query(
-            `SELECT id, donor_name, food_item, quantity, pickup_time, status, created_at
-             FROM donations
-             ${whereClause}
-             ORDER BY pickup_time ASC`,
+            `
+            SELECT id, donor_name, food_item, quantity, pickup_time, status, created_at
+            FROM donations
+            ${whereClause}
+            ORDER BY pickup_time ASC
+            `,
             params
         );
 
-        // Format dates for display while keeping data simple
-        const donations = rows.map((row) => ({
+        // Format dates
+        const donations = rows.map(row => ({
             ...row,
             pickup_time: new Date(row.pickup_time).toLocaleString(),
-            created_at: new Date(row.created_at).toLocaleString(),
+            created_at: new Date(row.created_at).toLocaleString()
         }));
 
-        const statusCounts = rows.reduce(
-            (acc, row) => {
-                acc[row.status] = (acc[row.status] || 0) + 1;
-                return acc;
-            },
-            { Available: 0, Claimed: 0, Completed: 0 }
-        );
-
+        // Stats (only this donor)
         const stats = {
             total: rows.length,
-            available: statusCounts.Available,
-            claimed: statusCounts.Claimed,
-            completed: statusCounts.Completed,
+            available: rows.filter(d => d.status === 'Available').length,
+            claimed: rows.filter(d => d.status === 'Claimed').length,
+            completed: rows.filter(d => d.status === 'Completed').length
         };
 
-        res.render("dashboard", {
+        res.render('dashboard', {
             donations,
             stats,
             activePath: req.path,
             statusFilter: status || 'all',
-            searchQuery: q || '',
+            searchQuery: q || ''
         });
+
     } catch (err) {
-        console.error("Failed to load dashboard", err);
-        res.status(500).send("Unable to load dashboard right now.");
+        console.error('Donor dashboard error:', err);
+        res.status(500).send('Unable to load dashboard');
     }
 });
+
 
 // Detail view for a single donation
 app.get("/donations/:id", async function(req, res) {
