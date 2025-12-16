@@ -20,6 +20,7 @@ block content
               th Quantity
               th Pickup Time
               th Added
+              th Action
           tbody
             each donation in donations
               tr
@@ -28,6 +29,13 @@ block content
                 td= donation.quantity
                 td= donation.pickup_time
                 td.text-muted= donation.created_at
+                td
+                  form(
+                    method='post'
+                    action=`/requests/${donation.id}`
+                  )
+                    button.btn.btn-sm.btn-primary(type='submit')
+                      | Request
     else
       .alert.alert-info.mt-4
         | No deals available right now. Please check again later.

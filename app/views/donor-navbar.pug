@@ -16,6 +16,11 @@ nav.navbar.navbar-expand-lg.navbar-dark.bg-dark
             href='/dashboard'
             class=(activePath === '/dashboard' ? 'active' : '')
           ) Dashboard
+        li.nav-item
+          a.nav-link(
+            href='/donor/requests'
+            class=(activePath === '/donor/requests' ? 'active' : '')
+          ) Requests
 
         li.nav-item
           a.nav-link(href='/profile') Profile

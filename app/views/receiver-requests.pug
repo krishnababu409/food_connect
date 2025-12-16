@@ -1,0 +1,41 @@
+extends layout.pug
+
+block navbar
+  include receiver-navbar.pug
+
+block content
+  main.container.py-5
+    .d-flex.justify-content-between.align-items-center.mb-4
+      div
+        h1.fw-bold My Requested Donations
+        p.text-muted Track the status of your food requests.
+
+    if requests && requests.length
+      .table-responsive
+        table.table.table-striped.table-hover.align-middle.shadow-sm
+          thead.table-dark
+            tr
+              th Donor
+              th Food Item
+              th Quantity
+              th Pickup Time
+              th Requested On
+              th Status
+          tbody
+            each req in requests
+              tr
+                td.fw-semibold= req.donor_name
+                td= req.food_item
+                td= req.quantity
+                td= req.pickup_time
+                td.text-muted= req.requested_at
+                td
+                  if req.request_status === 'Approved'
+                    span.badge.bg-success Approved
+                  else if req.request_status === 'Rejected'
+                    span.badge.bg-danger Rejected
+                  else
+                    span.badge.bg-warning.text-dark Pending
+    else
+      .alert.alert-info.mt-4
+        | You have not requested any donations yet.

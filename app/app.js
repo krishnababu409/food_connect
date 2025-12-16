@@ -435,6 +435,202 @@ app.post("/profile", async function (req, res) {
   }
 });
 
+// Receiver requests a donation
+app.post('/requests/:donationId', async function (req, res) {
+
+    if (!req.session.loggedIn || req.session.role !== 'receiver') {
+        return res.redirect('/login');
+    }
+
+    const donationId = req.params.donationId;
+    const receiverId = req.session.uid;
+
+    try {
+        // Prevent duplicate requests
+        const existing = await db.query(
+            `SELECT id FROM food_requests
+             WHERE donation_id = ? AND receiver_id = ?`,
+            [donationId, receiverId]
+        );
+
+        if (existing.length) {
+            return res.redirect('/receiver/dashboard');
+        }
+
+        // Insert request
+        await db.query(
+            `INSERT INTO food_requests (donation_id, receiver_id)
+             VALUES (?, ?)`,
+            [donationId, receiverId]
+        );
+
+        // Mark donation as claimed
+        await db.query(
+            `UPDATE donations
+             SET status = 'Claimed'
+             WHERE id = ?`,
+            [donationId]
+        );
+
+        res.redirect('/receiver/dashboard');
+
+    } catch (err) {
+        console.error('Request donation error:', err);
+        res.status(500).send('Unable to request donation');
+    }
+});
+
+// Receiver - My Requested Donations
+app.get('/receiver/requests', async function (req, res) {
+
+    if (!req.session.loggedIn || req.session.role !== 'receiver') {
+        return res.redirect('/login');
+    }
+
+    const receiverId = req.session.uid;
+
+    try {
+        const rows = await db.query(
+            `
+            SELECT 
+                fr.id AS request_id,
+                fr.status AS request_status,
+                fr.requested_at,
+                d.food_item,
+                d.quantity,
+                d.pickup_time,
+                d.donor_name
+            FROM food_requests fr
+            JOIN donations d ON fr.donation_id = d.id
+            WHERE fr.receiver_id = ?
+            ORDER BY fr.requested_at DESC
+            `,
+            [receiverId]
+        );
+
+        const requests = rows.map(r => ({
+            ...r,
+            pickup_time: new Date(r.pickup_time).toLocaleString(),
+            requested_at: new Date(r.requested_at).toLocaleString()
+        }));
+
+        res.render('receiver-requests', {
+            requests,
+            activePath: req.path
+        });
+
+    } catch (err) {
+        console.error('Receiver requests error:', err);
+        res.status(500).send('Unable to load requested donations');
+    }
+});
+
+
+// Donor - View incoming requests
+app.get('/donor/requests', async function (req, res) {
+
+    if (!req.session.loggedIn || req.session.role !== 'donor') {
+        return res.redirect('/login');
+    }
+
+    const donorId = req.session.uid;
+
+    try {
+        const rows = await db.query(
+            `
+            SELECT 
+                fr.id AS request_id,
+                fr.status AS request_status,
+                fr.requested_at,
+                u.email AS receiver_email,
+                d.food_item,
+                d.quantity,
+                d.id AS donation_id
+            FROM food_requests fr
+            JOIN donations d ON fr.donation_id = d.id
+            JOIN users u ON fr.receiver_id = u.id
+            WHERE d.donor_id = ?
+            ORDER BY fr.requested_at DESC
+            `,
+            [donorId]
+        );
+
+        const requests = rows.map(r => ({
+            ...r,
+            requested_at: new Date(r.requested_at).toLocaleString()
+        }));
+
+        res.render('donor-requests', {
+            requests,
+            activePath: req.path
+        });
+
+    } catch (err) {
+        console.error('Donor requests error:', err);
+        res.status(500).send('Unable to load requests');
+    }
+});
+
+// Donor approves request
+app.post('/requests/:id/approve', async function (req, res) {
+
+    if (!req.session.loggedIn || req.session.role !== 'donor') {
+        return res.redirect('/login');
+    }
+
+    const requestId = req.params.id;
+
+    try {
+        // Approve request
+        await db.query(
+            `UPDATE food_requests SET status = 'Approved' WHERE id = ?`,
+            [requestId]
+        );
+
+        res.redirect('/donor/requests');
+
+    } catch (err) {
+        console.error('Approve request error:', err);
+        res.status(500).send('Unable to approve request');
+    }
+});
+
+// Donor rejects request
+app.post('/requests/:id/reject', async function (req, res) {
+
+    if (!req.session.loggedIn || req.session.role !== 'donor') {
+        return res.redirect('/login');
+    }
+
+    const requestId = req.params.id;
+
+    try {
+        // Reject request
+        await db.query(
+            `UPDATE food_requests SET status = 'Rejected' WHERE id = ?`,
+            [requestId]
+        );
+
+        // Optional: make donation available again
+        await db.query(
+            `
+            UPDATE donations d
+            JOIN food_requests fr ON d.id = fr.donation_id
+            SET d.status = 'Available'
+            WHERE fr.id = ?
+            `,
+            [requestId]
+        );
+
+        res.redirect('/donor/requests');
+
+    } catch (err) {
+        console.error('Reject request error:', err);
+        res.status(500).send('Unable to reject request');
+    }
+});
+
+
 // Start server on port 3000
 app.listen(3000, function () {
   console.log(`Server running at http://127.0.0.1:3000/`);

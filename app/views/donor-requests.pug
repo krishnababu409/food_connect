@@ -1,0 +1,56 @@
+extends layout.pug
+
+block navbar
+  include donor-navbar.pug
+
+block content
+  main.container.py-5
+    .d-flex.justify-content-between.align-items-center.mb-4
+      div
+        h1.fw-bold Incoming Requests
+        p.text-muted Review and manage incoming food requests.
+
+    if requests && requests.length
+      .table-responsive
+        table.table.table-striped.table-hover.align-middle.shadow-sm
+          thead.table-dark
+            tr
+              th Food Item
+              th Quantity
+              th Requested By
+              th Requested On
+              th Status
+              th Action
+          tbody
+            each req in requests
+              tr
+                td= req.food_item
+                td= req.quantity
+                td= req.receiver_email
+                td.text-muted= req.requested_at
+                td
+                  if req.request_status === 'Approved'
+                    span.badge.bg-success Approved
+                  else if req.request_status === 'Rejected'
+                    span.badge.bg-danger Rejected
+                  else
+                    span.badge.bg-warning.text-dark Pending
+                td
+                  if req.request_status === 'Pending'
+                    form(
+                      method='post'
+                      action=`/requests/${req.request_id}/approve`
+                      style='display:inline'
+                    )
+                      button.btn.btn-sm.btn-success(type='submit') Approve
+                    form(
+                      method='post'
+                      action=`/requests/${req.request_id}/reject`
+                      style='display:inline'
+                    )
+                      button.btn.btn-sm.btn-danger(type='submit') Reject
+                  else
+                    span.text-muted —
+    else
+      .alert.alert-info.mt-4
+        | No incoming requests yet.

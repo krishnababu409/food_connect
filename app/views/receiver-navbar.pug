@@ -17,6 +17,11 @@ nav.navbar.navbar-expand-lg.navbar-dark.bg-dark
             class=(activePath === '/receiver/dashboard' ? 'active' : '')
           ) Browse Food
         li.nav-item
+            a.nav-link(
+                href='/receiver/requests'
+                class=(activePath === '/receiver/requests' ? 'active' : '')
+            ) My Requests
+        li.nav-item
           a.nav-link(href='/profile') Profile
 
 
