@@ -15,13 +15,8 @@ services:
     restart: always
     env_file:
       - ./.env
-    environment:
-      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD:-password}
-      MYSQL_DATABASE: ${MYSQL_DATABASE:-sd2-db}
-      MYSQL_USER: ${MYSQL_USER:-admin}
-      MYSQL_PASSWORD: ${MYSQL_PASS:-password}
     ports:
-      - "${DB_HOST_PORT:-3308}:3306"
+      - "3308:3306"
     volumes:
       - ./db:/var/lib/mysql
   phpmyadmin:
@@ -29,10 +24,5 @@ services:
     restart: always
     env_file:
       - ./.env
-    environment:
-      PMA_HOST: db
-      PMA_PORT: 3306
-    depends_on:
-      - db
     ports:
-      - "${PHPMYADMIN_PORT:-8081}:80"
+      - "8081:80"

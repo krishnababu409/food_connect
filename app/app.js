@@ -29,54 +29,78 @@ const sessionMiddleware = session({
 app.use(sessionMiddleware);
 
 app.post('/set-password', async function (req, res) {
-    params = req.body;
-    var user = new User(params.email);
+    const { email, password, role } = req.body;
+
+    const user = new User(email);
+
     try {
-        uId = await user.getIdFromEmail();
+        const uId = await user.getIdFromEmail();
+
         if (uId) {
-            // If a valid, existing user is found, set the password and redirect to the users single-student page
-            await user.setUserPassword(params.password);
-            console.log(req.session.id);
-            res.send('Password set successfully');
-        }
-        else {
-            // If no existing user is found, add a new one
-            newId = await user.addUser(params.email);
-            res.send('Perhaps a page where a new user sets a programme would be good here');
+            await user.setUserPassword(password);
+            res.redirect('/login');
+        } else {
+            await user.addUser(password, role);
+            res.redirect('/login');
         }
     } catch (err) {
-        console.error(`Error while adding password `, err.message);
+        console.error('Registration error:', err);
+        res.render('register', { errorMessage: 'Registration failed. Try again.' });
     }
 });
+
 
 // Check submitted email and password pair
 app.post('/authenticate', async function (req, res) {
     try {
         const { email, password } = req.body;
+
         if (!email || !password) {
-            return res.status(400).send('Email and password are required.');
+            return res.status(400).render('login', {
+                errorMessage: 'Email and password are required'
+            });
         }
 
-        var user = new User(email);
-        const uId = await user.getIdFromEmail();
-        if (!uId) {
-            return res.status(401).send('Invalid email');
+        const user = new User(email);
+
+        // Fetch user + role
+        const userData = await user.getUserWithRole();
+        if (!userData) {
+            return res.status(401).render('login', {
+                errorMessage: 'Invalid email'
+            });
         }
 
+        // Authenticate password
         const match = await user.authenticate(password);
         if (!match) {
-            return res.status(401).send('Invalid password');
+            return res.status(401).render('login', {
+                errorMessage: 'Invalid password'
+            });
         }
 
-        req.session.uid = uId;
+        // Session values
+        req.session.uid = user.id;
+        req.session.role = user.role;
         req.session.loggedIn = true;
-        console.log(req.session.id);
-        res.redirect('/');
+
+        // Role-based redirect
+        if (user.role === 'donor') {
+            return res.redirect('/dashboard');
+        } else if (user.role === 'receiver') {
+            return res.redirect('/receiver/dashboard');
+        } else {
+            return res.redirect('/');
+        }
+
     } catch (err) {
-        console.error(`Error while authenticating user:`, err.message);
-        res.status(500).send('Internal Server Error');
+        console.error('Login error:', err);
+        res.status(500).render('login', {
+            errorMessage: 'Something went wrong. Please try again.'
+        });
     }
 });
+
 
 app.get("/", function (req, res) {
     try {

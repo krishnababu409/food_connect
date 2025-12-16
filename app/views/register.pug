@@ -11,19 +11,49 @@ block content
           .card.shadow-sm
             .card-body.p-4.p-lg-5
               h1.fw-bold.mb-3 Create account
-              p.text-muted.mb-4 Join Food Connect to share or claim donations.
+              p.text-muted.mb-4 Join Food Connect as a donor or receiver.
+
+              if errorMessage
+                .alert.alert-danger= errorMessage
+
+              if successMessage
+                .alert.alert-success= successMessage
+
               form(method='post' action='/set-password' novalidate)
                 .row.g-3
+                  // Email
                   .col-md-6
                     label.form-label(for='email') Email
-                    input#email.form-control(type='email' name='email' required)
+                    input#email.form-control(
+                      type='email'
+                      name='email'
+                      placeholder='you@example.com'
+                      required
+                    )
 
+                  // Password
                   .col-md-6
                     label.form-label(for='password') Password
-                    input#password.form-control(type='password' name='password' required)
+                    input#password.form-control(
+                      type='password'
+                      name='password'
+                      placeholder='Create a strong password'
+                      required
+                    )
+
+                  // Role selection
+                  .col-12
+                    label.form-label(for='role') I am registering as
+                    select#role.form-select(name='role' required)
+                      option(value='' disabled selected) Select your role
+                      option(value='donor') Donor (Restaurant / Retailer)
+                      option(value='receiver') Receiver (Charity / NGO)
 
                 .d-grid.mt-4
-                  button.btn.btn-primary.btn-lg(type='submit') Create account
-                p.mb-0.mt-3.text-muted Already have an account?
+                  button.btn.btn-primary.btn-lg(type='submit')
+                    | Create account
+
+                p.mb-0.mt-3.text-muted
+                  | Already have an account?
                   |  
                   a(href='/login') Sign in
