@@ -146,6 +146,41 @@ app.get("/contact", function(req, res) {
     res.render("contact", { activePath: req.path });
 });
 
+// Contact Us API (POST)
+app.post('/contact', async function (req, res) {
+    const { name, email, message } = req.body;
+
+    // Basic validation
+    if (!name || !email || !message) {
+        return res.render('contact', {
+            errorMessage: 'All fields are required',
+            activePath: req.path
+        });
+    }
+
+    try {
+        const sql = `
+            INSERT INTO contact_messages (name, email, message)
+            VALUES (?, ?, ?)
+        `;
+
+        await db.query(sql, [name, email, message]);
+
+        res.render('contact', {
+            successMessage: 'Thank you for contacting us. We will get back to you soon.',
+            activePath: req.path
+        });
+
+    } catch (err) {
+        console.error('Contact API error:', err);
+        res.render('contact', {
+            errorMessage: 'Something went wrong. Please try again later.',
+            activePath: req.path
+        });
+    }
+});
+
+
 // Dashboard route for donors to land on
 app.get("/dashboard", async function(req, res) {
     const { status, q } = req.query;

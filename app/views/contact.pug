@@ -1,32 +1,49 @@
 extends layout.pug
 
+block navbar
+  include mainbar.pug
+
 block content
   main.container.py-5
     .row.gy-4
       .col-lg-6
         h1.mb-3 Contact Us
         p.lead Have questions, want to partner, or need help getting set up? We’d love to hear from you.
+
+        if errorMessage
+          .alert.alert-danger= errorMessage
+
+        if successMessage
+          .alert.alert-success= successMessage
+
         .mt-4
           h5 Email
           p.mb-0
             a(href='mailto:hello@foodconnect.local') hello@foodconnect.local
+
         .mt-3
           h5 Phone
           p.mb-0 +1 (555) 123-4567
-        .mt-3
-          h5 Hours
-          p.mb-0 Mon–Fri, 9:00 AM – 6:00 PM
+
       .col-lg-6
         .p-4.bg-light.rounded-4.shadow-sm
           h4.mb-3 Send us a message
-          form(method='post' action='#')
+
+          form(method='post' action='/contact')
             .mb-3
               label.form-label(for='name') Name
-              input#name.form-control(type='text' placeholder='Your name' required)
+              input#name.form-control(type='text' name='name' required)
+
             .mb-3
               label.form-label(for='email') Email
-              input#email.form-control(type='email' placeholder='you@example.com' required)
+              input#email.form-control(type='email' name='email' required)
+
             .mb-3
               label.form-label(for='message') Message
-              textarea#message.form-control(rows='4' placeholder='How can we help?' required)
-            button.btn.btn-primary(type='submit' disabled) Submit (coming soon)
+              textarea#message.form-control(
+                rows='4'
+                name='message'
+                required
+              )
+
+            button.btn.btn-primary(type='submit') Send message
