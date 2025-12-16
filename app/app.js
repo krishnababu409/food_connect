@@ -282,6 +282,59 @@ app.get('/receiver/dashboard', async function (req, res) {
 });
 
 
+// Show create donation form
+app.get('/donations/create', function (req, res) {
+
+    if (!req.session.loggedIn || req.session.role !== 'donor') {
+        return res.redirect('/login');
+    }
+
+    res.render('donation-create', {
+        activePath: req.path
+    });
+});
+
+// Create donation (INSERT)
+app.post('/donations/create', async function (req, res) {
+
+    if (!req.session.loggedIn || req.session.role !== 'donor') {
+        return res.redirect('/login');
+    }
+
+    const { food_item, quantity, pickup_time } = req.body;
+    const donorId = req.session.uid;
+
+    if (!food_item || !quantity || !pickup_time) {
+        return res.render('donation-create', {
+            errorMessage: 'All fields are required'
+        });
+    }
+
+    try {
+        await db.query(
+            `INSERT INTO donations 
+             (donor_id, donor_name, food_item, quantity, pickup_time)
+             VALUES (?, ?, ?, ?, ?)`,
+            [
+                donorId,
+                'You', // or fetch donor name later
+                food_item,
+                quantity,
+                pickup_time
+            ]
+        );
+
+        res.redirect('/dashboard');
+
+    } catch (err) {
+        console.error('Create donation error:', err);
+        res.render('donation-create', {
+            errorMessage: 'Failed to create donation'
+        });
+    }
+});
+
+
 
 // Detail view for a single donation
 app.get("/donations/:id", async function(req, res) {

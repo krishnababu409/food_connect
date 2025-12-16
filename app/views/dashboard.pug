@@ -57,7 +57,7 @@ block content
           table.table.table-striped.table-hover.align-middle.shadow-sm
             thead.table-dark
               tr
-                th(scope='col') Donor
+                //- th(scope='col') Donor
                 th(scope='col') Food Item
                 th(scope='col') Quantity
                 th(scope='col') Pickup Time
@@ -67,7 +67,7 @@ block content
               each donation in donations
                 - const statusClass = donation.status === 'Available' ? 'bg-success' : donation.status === 'Claimed' ? 'bg-warning text-dark' : 'bg-primary'
                 tr.donation-row(role='button' tabindex='0' data-href=`/donations/${donation.id}`)
-                  td.fw-semibold= donation.donor_name
+                  //- td.fw-semibold= donation.donor_name
                   td= donation.food_item
                   td= donation.quantity
                   td= donation.pickup_time
@@ -78,7 +78,8 @@ block content
         .alert.alert-info.mt-4.shadow-sm No donations match your filters. Try adjusting search or status.
 
       .mt-4.d-flex.justify-content-end.align-items-center
-        a.btn.btn-primary(href='/register') Add Donation
+        a.btn.btn-primary(href='/donations/create') + Create Donation
+
 
     if donations && donations.length
       script.
